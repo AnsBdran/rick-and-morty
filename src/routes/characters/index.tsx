@@ -57,9 +57,6 @@ function RouteComponent() {
               hasError,
           })}
         />
-        <p className="text-xs text-muted-foreground mt-1 ps-1">
-          Results found: {40}
-        </p>
       </div>
 
       <ScrollArea className="h-4/5 @container px-3 border-t pb-4 border-accent shadow-lg shadow-card">
