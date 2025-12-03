@@ -1,30 +1,33 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Await, createFileRoute } from "@tanstack/react-router";
 import { getCharacters } from "@/utils/queries";
-import { CharacterCard } from "@/components";
+import {
+  CharacterCard,
+  CharacterCardSkeleton,
+  CharacterCardSkeletonList,
+} from "@/components";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect, useMemo, type ChangeEvent } from "react";
+import type { Character } from "@/types";
 import { cn, debounce } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const Route = createFileRoute("/characters/")({
   component: RouteComponent,
+  pendingMs: 0,
+  pendingComponent: CharacterCardSkeleton,
   validateSearch: (search) => search as { query?: string },
   loaderDeps: ({ search }) => ({ query: search.query }),
   loader: async ({ deps: { query } }) => {
-    console.log("query", query);
-
-    const data = await getCharacters(query);
-    if (data.error) return { characters: null };
-    return { characters: data.results };
+    return { deferred: getCharacters(query) };
   },
 });
 
 function RouteComponent() {
-  const routeData = Route.useLoaderData();
-  const { characters } = routeData;
+  const { deferred } = Route.useLoaderData();
   const navigate = Route.useNavigate();
   const { query } = Route.useSearch();
   const [inputValue, setInputValue] = useState(query ?? "");
+  const [hasError, setHasError] = useState(false);
 
   const debouncedNavigate = useMemo(
     () =>
@@ -51,7 +54,7 @@ function RouteComponent() {
           onChange={handleChange}
           className={cn({
             "border-rose-400 focus-visible:border-rose-400 focus-visible:ring-rose-500":
-              !characters,
+              hasError,
           })}
         />
         <p className="text-xs text-muted-foreground mt-1 ps-1">
@@ -60,14 +63,41 @@ function RouteComponent() {
       </div>
 
       <ScrollArea className="h-4/5 @container px-3 border-t pb-4 border-accent shadow-lg shadow-card">
-        <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
-          {characters ? (
-            characters.map((c) => <CharacterCard key={c.id} character={c} />)
-          ) : (
-            <p>No characters found</p>
+        <Await promise={deferred} fallback={<CharacterCardSkeletonList />}>
+          {(data) => (
+            <CharacterResults data={data} onErrorChange={setHasError} />
           )}
-        </div>
+        </Await>
       </ScrollArea>
+    </div>
+  );
+}
+
+// Helper component to sync error state via useEffect
+function CharacterResults({
+  data,
+  onErrorChange,
+}: {
+  data: { error?: string; results?: Character[] };
+  onErrorChange: (hasError: boolean) => void;
+}) {
+  const hasError = !!data.error;
+
+  useEffect(() => {
+    onErrorChange(hasError);
+  }, [hasError, onErrorChange]);
+
+  if (data.error) {
+    return (
+      <h2 className="text-center text-destructive py-4">No characters found</h2>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
+      {data.results?.map((c) => (
+        <CharacterCard key={c.id} character={c} />
+      ))}
     </div>
   );
 }
