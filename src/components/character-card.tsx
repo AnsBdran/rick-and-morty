@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { Character } from "@/types";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 type Props = {
   character: Character;
@@ -19,12 +20,10 @@ export const CharacterCard = ({ character }: Props) => {
       params={{ id: String(character.id) }}
       className="group flex gap-4 rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-lg"
     >
-      <img
-        src={character.image}
-        alt={character.name}
-        className="size-20 shrink-0 rounded-lg object-cover"
-      />
-
+      <Avatar className="size-20 shrink-0 rounded-lg object-cover">
+        <AvatarImage alt={character.name} src={character.image} />
+        <AvatarFallback>{getInitials(character.name)}</AvatarFallback>
+      </Avatar>
       <div className="min-w-0 flex-1 space-y-1.5">
         <div className="flex items-center justify-between gap-2">
           <h3 className="truncate text-lg font-bold">{character.name}</h3>
