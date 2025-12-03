@@ -8,13 +8,8 @@ export const getCharacters = async (query?: string) => {
   return await response.json();
 };
 
-export const getCharacterById = async (id: string) => {
+export const getCharacterById = async (id: number) => {
   const response = await fetch(`${API_BASE_URL}/character/${id}`);
-  return response.json();
-};
-
-export const getCharacterByName = async (name: string) => {
-  const response = await fetch(`${API_BASE_URL}/character/?name=${name}`);
   return response.json();
 };
 
