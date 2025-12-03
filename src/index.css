@@ -117,4 +117,13 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  h1 {
+    font-size: var(--text-3xl);
+    font-weight: 700;
+  }
+  h2 {
+    font-size: var(--text-2xl);
+    font-weight: 600;
+  }
 }
